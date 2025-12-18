@@ -5,6 +5,9 @@ const mongoose = require('mongoose')
 const User = require('./userDB')
 const port = 8080;
 
+
+//need to do npm installs
+
 config()
 
 mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
