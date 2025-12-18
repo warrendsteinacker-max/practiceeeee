@@ -1,9 +1,9 @@
 const express = require('express');
 const app = express();
-const mongodbC = require('mongodb')
+const mongoose = require('mongoose')
 const port = 8080;
 
-
+mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
 // 1. Define a Route Handler (GET /)
 // This function runs when someone visits the server's root URL (e.g., http://localhost:3000/)
 app.get('/', (req, res) => {
