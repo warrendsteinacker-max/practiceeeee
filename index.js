@@ -2,6 +2,7 @@ const { config } = require('dotenv');
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose')
+const User = require('./userDB')
 const port = 8080;
 
 config()
@@ -9,7 +10,7 @@ config()
 mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
 // 1. Define a Route Handler (GET /)
 // This function runs when someone visits the server's root URL (e.g., http://localhost:3000/)
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   console.log('Request received for the home page.');
   res.send('<h1>Hello from the Express Server!</h1><p>The server is running on port ' + port + '</p>');
 });
