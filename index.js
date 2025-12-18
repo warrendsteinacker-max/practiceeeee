@@ -11,8 +11,14 @@ mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error)
 // 1. Define a Route Handler (GET /)
 // This function runs when someone visits the server's root URL (e.g., http://localhost:3000/)
 app.get('/', async (req, res) => {
-  console.log('Request received for the home page.');
-  res.send('<h1>Hello from the Express Server!</h1><p>The server is running on port ' + port + '</p>');
+  try{
+    res.send(User)
+    res.status(202)
+  }
+  catch(error){
+    res.status(404)
+    console.error(error.message)
+  }
 });
 
 // 2. Define a different Route Handler (GET /api/status)
