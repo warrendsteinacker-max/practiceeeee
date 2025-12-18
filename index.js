@@ -72,3 +72,12 @@ app.put('/api/data', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+
+export const Admin = (req, res, next) => {
+  const {password} = req.body
+  if (password !== process.env.adminp){
+    return res.status(404).json({m: not admin})
+  } 
+  next()
+}
