@@ -1,7 +1,10 @@
+const { config } = require('dotenv');
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose')
 const port = 8080;
+
+config()
 
 mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
 // 1. Define a Route Handler (GET /)
