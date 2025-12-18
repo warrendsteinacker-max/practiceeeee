@@ -5,8 +5,12 @@ const userschem = new mongoose.Schema({
     person: {
         id: Number,
         name: String,
+        password: Number, 
     }
 });
+
+
+
 
 // Create the Model
 // Note: Do NOT put 'userschem' in quotes. Pass the actual variable.
