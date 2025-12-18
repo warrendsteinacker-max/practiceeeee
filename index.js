@@ -50,6 +50,21 @@ app.delete('/api/data', async (req, res) => {
   }
 });
 
+app.put('/api/data', async (req, res) => {
+  try{
+    const {Epost, id} = req.body
+    epost = await User.findByIdAndUpdate(id, Epost, {new: true})
+    if(!epost){
+      return res.status(404).json({user: "user not found"})
+    }
+    res.status(200).json(epost)
+  }
+  catch(error){
+    console.error(error.message)
+    res.status(500).json({error: error.message})
+  }
+})
+
 // 3. Start the Server and Listen to the Port
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
