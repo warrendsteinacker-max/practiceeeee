@@ -2,11 +2,14 @@ const { config } = require('dotenv');
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose')
-const User = require('./userDB')
+const User = require('./userDB');
+const { jwt } = require('jsonwebtoken');
 const port = 8080;
 
 
 //need to do npm installs
+const Acheack = async (req, res, next)
+
 
 config()
 
@@ -24,7 +27,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.post('/api/data', async (req, res) => {
+app.post('/api/data', Tcheack, async (req, res) => {
   try{
     const {nuser} = req.body
     const Nuser = new User(nuser)
@@ -38,7 +41,7 @@ app.post('/api/data', async (req, res) => {
 })
 
 // 2. Define a different Route Handler (GET /api/status)
-app.delete('/api/data', async (req, res) => {
+app.delete('/api/data', Tcheack, Acheack, async (req, res) => {
   try{// Respond with a JSON object (common for APIs)
     const {id} = req.body
     NdataF = await User.findByIdAndDelete(id)
@@ -53,7 +56,7 @@ app.delete('/api/data', async (req, res) => {
   }
 });
 
-app.put('/api/data', async (req, res) => {
+app.put('/api/data', Tcheack, async (req, res) => {
   try{
     const {Epost, id} = req.body
     epost = await User.findByIdAndUpdate(id, Epost, {new: true})
@@ -67,7 +70,7 @@ app.put('/api/data', async (req, res) => {
     res.status(500).json({error: error.message})
   }
 })
-
+//do npm installs
 app.post('/login', async (req, res) => {
     try{
       const {username, pas} = req.body
@@ -75,20 +78,23 @@ app.post('/login', async (req, res) => {
       if(!user){
         return res.status(404).json({ress: fail})
       }
-      else if(){
-
+      const payload = pas === process.env.Apas ? "admin" : "user"
+      const token = jwt.sign(payload, process.env.JWT, {expiresIn: '1h'})
+      res.cookie('token', token, {
+            httpOnly: true, // Prevents JS access (XSS protection)
+            secure: process.env.NODE_ENV === 'production', // Only HTTPS in prod
+            sameSite: 'strict', // Prevents CSRF attacks
+            maxAge: 3600000 // 1 hour in milliseconds
+        })
+        return res.status(200).json({ message: "Logged in", role: payload.role })
       }
-      else{
-
-      }
-    }
-    catch(error){
+      catch(error){
         console.error(error.message)
         res.status(500).json({error: error.message})
     }
 })
 
-app.post('logout', async (req, res) => {
+app.post('/logout', async (req, res) => {
 
 })
 

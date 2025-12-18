@@ -6,6 +6,7 @@ const userschem = new mongoose.Schema({
         id: Number,
         name: String,
         password: Number, 
+        username: String,
     }
 });
 
