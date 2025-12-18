@@ -77,7 +77,71 @@ app.listen(port, () => {
 export const Admin = (req, res, next) => {
   const {password} = req.body
   if (password !== process.env.adminp){
-    return res.status(404).json({m: not admin})
+    return res.status(404).json({m: not "admin"})
   } 
   next()
 }
+
+import jwt from 'jsonwebtoken'
+
+app.post('/login', async (req, res) => {
+  const {user} = req.body
+  const token = jwt.sing(user, pocess.env.JWT, { expiresIn: '1h'})
+
+  res.cookie('token', token, {httpOnly: true, secure: true})
+  res.status(200).json({G: good})
+})
+
+
+
+
+app.post('/login', async (req, res) => {
+    try {
+        const {username, password } = req.body;
+
+        // 1. Fetch user from DB (Placeholder logic)
+        // const user = await User.findOne({ username });
+        // if (!user || user.password !== password) return res.status(401).json({ m: "Fail" });
+
+        // 2. Define the payload (what the token "carries")
+        const payload = {  
+            role: password === process.env.Apas ? "admin" : "user" // Example logic
+        };
+
+        // 3. Sign the token (Corrected typos)
+        const token = jwt.sign(payload, process.env.JWT, { expiresIn: '1h' });
+
+        // 4. Set the Cookie
+        res.cookie('token', token, {
+            httpOnly: true, // Prevents JS access (XSS protection)
+            secure: process.env.NODE_ENV === 'production', // Only HTTPS in prod
+            sameSite: 'strict', // Prevents CSRF attacks
+            maxAge: 3600000 // 1 hour in milliseconds
+        });
+
+        return res.status(200).json({ message: "Logged in", role: payload.role });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+
+const handleLogin = async (logedinfo) => {
+  try {
+    const {username, password} = logedinfo
+    const res = await axios.post('http://localhost:5000/login', 
+      { username, password }, 
+      { withCredentials: true } // REQUIRED to allow cookies
+    );
+    
+    // Store the role in React state/context to show/hide Admin buttons
+    setUserRole(res.data.role); 
+  } catch (err) {
+    console.error("Login failed");
+  }
+};
+
+
+
+
+
