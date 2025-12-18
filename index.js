@@ -21,7 +21,16 @@ app.get('/', async (req, res) => {
   }
 });
 
+app.post('/api/data', async (req, res) => {
+  try{
+    const {nuser} = req.body
+    const Nuser = new User(nuser)
+    await User.save(Nuser)
+  }
+  catch(error){
 
+  }
+})
 
 // 2. Define a different Route Handler (GET /api/status)
 app.get('/api/status', (req, res) => {
