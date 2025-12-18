@@ -25,21 +25,29 @@ app.post('/api/data', async (req, res) => {
   try{
     const {nuser} = req.body
     const Nuser = new User(nuser)
-    await User.save(Nuser)
+    const Nu = await Nuser.save()
+    res.status(201).json(Nu)
   }
   catch(error){
-
+    console.error(error.message)
+    res.status(500).json({error: error.message})
   }
 })
 
 // 2. Define a different Route Handler (GET /api/status)
-app.get('/api/status', (req, res) => {
-  // Respond with a JSON object (common for APIs)
-  res.json({
-    status: 'ok',
-    message: 'Server is up and running.',
-    timestamp: new Date().toISOString()
-  });
+app.delete('/api/data', async (req, res) => {
+  try{// Respond with a JSON object (common for APIs)
+    const {id} = req.body
+    NdataF = await User.findByIdAndDelete(id)
+      if (!NdataF) {
+        return res.status(404).json({user: "user not found"})
+      }
+    res.status(201).json({user: "was deleted", id: id})
+    }
+  catch(error){
+    console.error(error.message)
+    res.status(500).json({error: "server error"})  
+  }
 });
 
 // 3. Start the Server and Listen to the Port
