@@ -19,6 +19,24 @@ app.post('/reg', async (req, res) => {
     }
 })
 
+app.post('/login', async(req, res) => {
+    const {pas, use} = req.body
+    try{
+        const Luser = await User.findOne({username: use})
+        if(!Luser){
+            return res.status(401).json({e: "g"})
+        }
+        if(Luser.password !== pas){
+            return res.status(401).json({e: "g"})
+        }
+        return res.status(200).json({e: "g"})
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({e: "g"})
+    }
+})
+
 app.post('/api/data', async(req, res) => {
     const {npost} = req.body
         if(!npost){
