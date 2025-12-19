@@ -10,7 +10,7 @@ const AC = async (req, res, next) => {
     const {token} = req.cookies
 
     if(!token){
-      res.status(401).json({D: D})
+     return res.status(401).json({error: D})
     }
     try{
       const dec = jwt.verify(token, process.env.JWT)
@@ -20,12 +20,12 @@ const AC = async (req, res, next) => {
         next()
       }
       else{
-        return res.status(403).json({D: D})
+        return res.status(403).json({error: D})
       }
     }
     catch(error){
       console.error(error.message)
-      res.status(401).json({D: D})
+      return res.status(401).json({error: D})
     }
 }
 
