@@ -34,7 +34,19 @@ const Acheack = (req, res, next) => {
 const Tcheack = (req, res, next) => {
     const token = req.cookies.token
     if(!token){
-      res.status(404).json({sign_in: invaled token})
+      res.status(401).json({sign_in: invaled})
+    try{
+      dec = jwt.verify(token, process.env.JWT)
+
+      req.user = dec
+
+      next()
+
+    }
+    catch{
+      console.error(error.message)
+      res.status(401).json({error: error.message})
+    }
     }
 }
 
