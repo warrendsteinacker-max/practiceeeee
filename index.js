@@ -113,7 +113,34 @@ app.post('/api/data', async(req, res) => {
   }
 })
 
-app.post('')
+app.post('/login', (req, res) => {
+    const {username, pas} = req.body
+    try{
+      const user = awiat User.findOne({username})
+      if(!user){
+        return res.status(403).json({error: error.message})
+      }
+      const isMatch = await bycrypt.compair(pas, user.password)
+      if(!isMatch){
+        return res.status(403).json({error: error.message})
+      }
+      payload = user.pas === process.env.Apas ? "admin":"user"
+
+      const payload = {id: user.id, role: role}
+      const token = jwt.sign(payload, process.env.JWT, {expiresIn: '1h'})
+      res.cookie('token', token, {
+            httpOnly: true, // Prevents JS access (XSS protection)
+            secure: process.env.NODE_ENV === 'production', // Only HTTPS in prod
+            sameSite: 'strict', // Prevents CSRF attacks
+            maxAge: 3600000 // 1 hour in milliseconds
+        })
+        return res.status(200).json({ message: "Logged in", role: payload.role })
+    }
+    catch(error){
+      console.error(error.message)
+      return res.status(401).json({error: error.message})
+    }
+})
 //do npm installs
 app.post('/login', async (req, res) => {
     try{
