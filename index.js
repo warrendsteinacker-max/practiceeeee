@@ -6,6 +6,14 @@ const User = require('./userDB');
 const { jwt } = require('jsonwebtoken');
 const port = 8080;
 
+const AC = async (req, res, next) => {
+    const {token} = req.cookies
+
+    if(!token){
+      
+    }
+}
+
 
 const Acheack = (req, res, next) => {
   // 1. Get the token from the cookie
