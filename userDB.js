@@ -10,7 +10,7 @@ const userschem = new mongoose.Schema({
     }
 });
 
-pre.userschem
+pre.userschem for hashing the password
 
 
 

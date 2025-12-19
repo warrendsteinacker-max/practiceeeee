@@ -68,7 +68,7 @@ app.get('/', async (req, res) => {
 
 
 // 2. Define a different Route Handler (GET /api/status)
-app.delete('/api/data', Tcheack, Acheack, async (req, res) => {
+app.delete('/api/data', Acheack, async (req, res) => {
   try{// Respond with a JSON object (common for APIs)
     const {id} = req.body
     NdataF = await Posts.findByIdAndDelete(id)
@@ -98,7 +98,7 @@ app.put('/api/data', Tcheack, async (req, res) => {
   }
 })
 
-app.post('/api/data', async(req, res) => {
+app.post('/api/data', Tcheack, async(req, res) => {
   const {Npost} = req.body 
   try{
     const newp = new Posts(Npost)
