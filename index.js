@@ -97,6 +97,21 @@ app.put('/api/data', Tcheack, async (req, res) => {
     res.status(500).json({error: error.message})
   }
 })
+
+app.post('api/data', async(req, res) => {
+  const {Npost} = req.body 
+  try{
+    const newp = new Posts(Npost)
+    const np = await Posts.save()
+    if(!np){
+      return res.status(403).json({error: error.message})
+    }
+  }
+  catch(error){
+    console.error(error.message)
+    return res.status(500).json({error: error.message})
+  }
+})
 //do npm installs
 app.post('/login', async (req, res) => {
     try{
