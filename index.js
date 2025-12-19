@@ -63,7 +63,19 @@ config()
 
 mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
 
+const corsOptions = {
+  // Replace with your Vite dev server URL (usually 5173)
+  origin: 'http://localhost:5173', 
+  credentials: true, // Required for your 'token' cookie to be sent
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
 
+app.use(helmet());               
+app.use(cors(corsOptions));      
+app.use(express.json());         
+app.use(cookieParser());         
+app.use(mongoSanitize());
 
 app.get('/', async (req, res) => {
   try{
@@ -108,7 +120,7 @@ app.put('/api/data', Tcheack, async (req, res) => {
   }
 })
 
-app.post('/api/data', Tcheack, async(req, res) => {
+app.post('/api/data', Tcheack(), postLimiter(), async(req, res) => {
   const {Npost} = req.body 
   try{
     const newp = new Posts(Npost)
