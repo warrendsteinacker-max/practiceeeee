@@ -1,81 +1,93 @@
 const { config } = require('dotenv');
 const express = require('express');
-const app = express();
-const mongoose = require('mongoose')
-const User = require('./userDB');
-const { jwt } = require('jsonwebtoken');
-const port = 8080;
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken'); // Corrected import
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const cors = require('cors');
+const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
+
+// Models
+const User = require('./userDB'); 
+const Posts = require('./postDB'); // Ensure this matches your filename
+
+const app = express();
+const port = 8080;
+config();
 
 
-const Acheack = (req, res, next) => {
-  // 1. Get the token from the cookie
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.status(401).json({ message: "No token, authorization denied" });
-  }
-
-  try {
-    // 2. Verify and decode the token
-    const decoded = jwt.verify(token, process.env.JWT);
-    
-    // 3. Check the role we stored in the payload
-    if (decoded.role === "admin") {
-      req.user = decoded; // Optional: store user info for the next function
-      next();
-    } else {
-      return res.status(403).json({ access: "denied" });
-    }
-  } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
-  }
+// Validation Logic
+const validatePost = (req, res, next) => {
+    const schema = Joi.object({
+        Npost: Joi.object({
+            title: Joi.string().min(5).max(100).required(),
+            content: Joi.string().min(10).required(),
+        }).required()
+    });
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+    next();
 };
 
+// Auth: Admin Only
+const Acheack = (req, res, next) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "No token, denied" });
+    try {
+        const decoded = jwt.verify(token, process.env.JWT);
+        if (decoded.role === "admin") {
+            req.user = decoded;
+            next();
+        } else {
+            return res.status(403).json({ access: "denied" });
+        }
+    } catch (err) {
+        res.status(401).json({ message: "Token invalid" });
+    }
+};
+
+// Auth: Logged In User
 const Tcheack = (req, res, next) => {
-    const token = req.cookies.token
-    if(!token){
-      return res.status(401).json({sign_in: invaled})}
-    try{
-      const dec = jwt.verify(token, process.env.JWT)
-
-      req.user = dec
-
-      next()
-
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ sign_in: "invalid" });
+    try {
+        req.user = jwt.verify(token, process.env.JWT);
+        next();
+    } catch (error) {
+        res.status(401).json({ error: error.message });
     }
-    catch(error){
-      console.error(error.message)
-      res.status(401).json({error: error.message})
-    }
-}
+};
 
 const postLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 POST requests per window
-  message: { error: "Too many requests, please try again in 15 minutes." },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { error: "Too many requests, try again later." }
 });
 
-config()
 
-
-mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
 
 const corsOptions = {
+
   // Replace with your Vite dev server URL (usually 5173)
-  origin: 'http://localhost:5173', 
+  origin: 'http://localhost:5173',
   credentials: true, // Required for your 'token' cookie to be sent
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
+
 };
 
-app.use(helmet());               
+
+
+app.use(helmet());              
 app.use(cors(corsOptions));      
-app.use(express.json());         
-app.use(cookieParser());         
+app.use(express.json());        
+app.use(cookieParser());        
 app.use(mongoSanitize());
+
+mongoose.connect(process.env.MURI).then(() => console.log("connected")).catch((error) => console.error(error.message))
 
 app.get('/', async (req, res) => {
   try{
@@ -88,7 +100,9 @@ app.get('/', async (req, res) => {
   }
 });
 
-
+//
+//
+//DATA POSTS ROUTES
 // 2. Define a different Route Handler (GET /api/status)
 app.delete('/api/data', Acheack, async (req, res) => {
   try{// Respond with a JSON object (common for APIs)
@@ -120,7 +134,7 @@ app.put('/api/data', Tcheack, async (req, res) => {
   }
 })
 
-app.post('/api/data', Tcheack(), postLimiter(), async(req, res) => {
+app.post('/api/data', postLimiter, Tcheack, validatePost, async(req, res) => {
   const {Npost} = req.body 
   try{
     const newp = new Posts(Npost)
@@ -135,8 +149,11 @@ app.post('/api/data', Tcheack(), postLimiter(), async(req, res) => {
   }
 })
 
-
-app.post('/login', async (req, res) => {
+//
+//
+//
+//Athentication routes USER routes
+app.post('/login', postLimiter, async (req, res) => {
     const { username, pas } = req.body;
     
     try {
@@ -208,6 +225,12 @@ app.post('/reg', async (req, res) => {
   }
 })
 
+
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something broke on the server!' });
+});
 // 3. Start the Server and Listen to the Port
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
