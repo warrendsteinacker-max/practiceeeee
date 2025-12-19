@@ -98,15 +98,15 @@ app.put('/api/data', Tcheack, async (req, res) => {
   }
 })
 
-app.post('api/data', async(req, res) => {
+app.post('/api/data', async(req, res) => {
   const {Npost} = req.body 
   try{
     const newp = new Posts(Npost)
-    const np = await Posts.save()
-    if(!np){
-      return res.status(403).json({error: error.message})
+    const np = await newp.save()
+    if(np){
+      return res.status(201).json({noerror: good})
+      }
     }
-  }
   catch(error){
     console.error(error.message)
     return res.status(500).json({error: error.message})
