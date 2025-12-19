@@ -10,7 +10,22 @@ const AC = async (req, res, next) => {
     const {token} = req.cookies
 
     if(!token){
-      
+      res.status(401).json({D: D})
+    }
+    try{
+      const dec = jwt.verify(token, process.env.JWT)
+
+      if(dec.role === "admin"){
+        req.user = dec 
+        next()
+      }
+      else{
+        return res.status(403).json({D: D})
+      }
+    }
+    catch(error){
+      console.error(error.message)
+      res.status(401).json({D: D})
     }
 }
 
