@@ -72,10 +72,8 @@ app.put('/api/data', async(req, res) => {
 app.get('/api/data', async(req, res) => {
     try{
         const FD = await Posts.find()
-        if(!FD){
-            return res.status(500).json({e: "e"})
-        } 
-        return res.status(200).json({e: "e"})
+        
+        return res.status(200).json({e: "e", data: FD})
     }
     catch(error){
         console.error(error.message)
