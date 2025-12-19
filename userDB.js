@@ -8,6 +8,7 @@ const userschem = new mongoose.Schema({
         name: String,
         password: Number, 
         username: String,
+        refreshToken: { type: String }
     }
 });
 

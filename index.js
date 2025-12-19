@@ -9,6 +9,8 @@ const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
+const hpp = require('hpp');
+const morgan = require('morgan');
 
 // Models
 const User = require('./userDB'); 
@@ -33,11 +35,12 @@ const validatePost = (req, res, next) => {
 };
 
 // Auth: Admin Only
+// FIX: Change process.env.JWT to process.env.JWT_ACCESS
 const Acheack = (req, res, next) => {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "No token, denied" });
     try {
-        const decoded = jwt.verify(token, process.env.JWT);
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS); // FIX HERE
         if (decoded.role === "admin") {
             req.user = decoded;
             next();
@@ -49,15 +52,14 @@ const Acheack = (req, res, next) => {
     }
 };
 
-// Auth: Logged In User
 const Tcheack = (req, res, next) => {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ sign_in: "invalid" });
     try {
-        req.user = jwt.verify(token, process.env.JWT);
+        req.user = jwt.verify(token, process.env.JWT_ACCESS); // FIX HERE
         next();
     } catch (error) {
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ error: "Access expired" });
     }
 };
 
@@ -66,6 +68,20 @@ const postLimiter = rateLimit({
     max: 10,
     message: { error: "Too many requests, try again later." }
 });
+
+const validateRegister = (req, res, next) => {
+    const schema = Joi.object({
+        nuser: Joi.object({
+            username: Joi.string().alphanum().min(3).max(30).required(),
+            password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}$')).required(),
+            name: Joi.string().required()
+        }).required()
+    });
+
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+    next();
+};
 
 
 
@@ -80,12 +96,21 @@ const corsOptions = {
 };
 
 
-
-app.use(helmet());              
+app.use(morgan('dev'));
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"], // Vite needs inline scripts for dev
+            connectSrc: ["'self'", "http://localhost:8080"], // Allow API calls
+        },
+    },
+}));              
 app.use(cors(corsOptions));      
 app.use(express.json());        
 app.use(cookieParser());        
 app.use(mongoSanitize());
+app.use(hpp());
 
 mongoose.connect(process.env.MURI).then(() => console.log("connected")).catch((error) => console.error(error.message))
 
@@ -157,37 +182,46 @@ app.post('/login', postLimiter, async (req, res) => {
     const { username, pas } = req.body;
     
     try {
-        // 2. Fixed spelling: await
         const user = await User.findOne({ username });
-        
         if (!user) {
-            // 3. Send a clear string, not error.message (which is undefined here)
-            return res.status(403).json({ error: "Invalid username or password" });
+            return res.status(403).json({ error: "Invalid credentials" });
         }
 
-        // 4. Fixed spelling: bcrypt.compare
         const isMatch = await bcrypt.compare(pas, user.password);
         if (!isMatch) {
-            return res.status(403).json({ error: "Invalid username or password" });
+            return res.status(403).json({ error: "Invalid credentials" });
         }
 
-        // 5. Determine the role correctly
+        // Logic for Admin role
         const userRole = user.password === process.env.Apas ? "admin" : "user";
-
-        // 6. Create the payload for the token
         const payload = { id: user._id, role: userRole };
-        
-        const token = jwt.sign(payload, process.env.JWT, { expiresIn: '1h' });
 
-        // 7. Set the cookie
-        res.cookie('token', token, {
+        // 1. Generate Access Token (15 minutes)
+        const accessToken = jwt.sign(payload, process.env.JWT_ACCESS, { expiresIn: '15m' });
+
+        // 2. Generate Refresh Token (7 days)
+        const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH, { expiresIn: '7d' });
+
+        // 3. SAVE Refresh Token to Database
+        user.refreshToken = refreshToken; 
+        await user.save();
+
+        // 4. Send Access Token Cookie
+        res.cookie('token', accessToken, {
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
             sameSite: 'strict', 
-            maxAge: 3600000 
+            maxAge: 900000 // 15 mins
         });
 
-        // 8. Success!
+        // 5. Send Refresh Token Cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 604800000 // 7 days
+        });
+
         return res.status(200).json({ message: "Logged in", role: userRole });
 
     } catch (error) {
@@ -196,26 +230,33 @@ app.post('/login', postLimiter, async (req, res) => {
     }
 });
 
-app.post('/logout', async (req, res) => {
-  try{
-    res.clearCookie( 'token',{
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'strict'}
-    )
-    return res.status(200).json({noerror: "good"})
-  }
-  catch(error){
-    console.error(error.message)
-    return res.status(500).json({error: error.message})
-  }
+app.post('/logout', Tcheack, async (req, res) => {
+  try {
+    // 1. Remove Refresh Token from the Database for this user
+    // req.user comes from your Tcheack middleware
+    await User.findByIdAndUpdate(req.user.id, { $unset: { refreshToken: 1 } });
 
-})
+    // 2. Clear both cookies
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    };
 
-app.post('/reg', async (req, res) => {
+    res.clearCookie('token', cookieOptions);
+    res.clearCookie('refreshToken', cookieOptions);
+
+    return res.status(200).json({ noerror: "good" });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ error: "Logout failed" });
+  }
+});
+
+app.post('/reg', validateRegister, async (req, res) => {
   try{
-    const {nuser} = req.body
-    const Nuser = new User(nuser)
+    const {username, password, name} = req.body.nuser
+    const Nuser = new User({person: {username, password, name}})
     const Nu = await Nuser.save()
     res.status(201).json(Nu)
   }
@@ -224,6 +265,44 @@ app.post('/reg', async (req, res) => {
     res.status(500).json({error: error.message})
   }
 })
+
+app.post('/refresh', async (req, res) => {
+    const refToken = req.cookies.refreshToken;
+    if (!refToken) return res.status(401).json({ error: "Access denied" });
+
+    try {
+        // 1. Verify the token signature first
+        const decoded = jwt.verify(refToken, process.env.JWT_REFRESH);
+
+        // 2. Find the user AND ensure the token in their DB matches exactly
+        const user = await User.findOne({ _id: decoded.id, refreshToken: refToken });
+        if (!user) return res.status(403).json({ error: "Session expired" });
+
+        // 3. RE-CALCULATE the role (since it's not in your DB)
+        // This ensures the new token actually works with your Acheack middleware
+        const userRole = user.password === process.env.Apas ? "admin" : "user";
+
+        // 4. Sign the new Access Token
+        const newAccessToken = jwt.sign(
+            { id: user._id, role: userRole }, 
+            process.env.JWT_ACCESS, 
+            { expiresIn: '15m' }
+        );
+
+        // 5. Send cookie with same security settings as Login
+        res.cookie('token', newAccessToken, { 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 900000 
+        });
+
+        res.json({ message: "Refreshed", role: userRole });
+    } catch (err) {
+        console.error("Refresh error:", err.message);
+        res.status(403).json({ error: "Invalid refresh token" });
+    }
+});
 
 
 
