@@ -10,6 +10,8 @@ const userschem = new mongoose.Schema({
     }
 });
 
+pre.userschem
+
 
 
 

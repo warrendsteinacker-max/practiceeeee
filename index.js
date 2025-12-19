@@ -6,85 +6,6 @@ const User = require('./userDB');
 const { jwt } = require('jsonwebtoken');
 const port = 8080;
 
-const AC = async (req, res, next) => {
-    const {token} = req.cookies
-
-    if(!token){
-     return res.status(401).json({error: D})
-    }
-    try{
-      const dec = jwt.verify(token, process.env.JWT)
-
-      if(dec.role === "admin"){
-        req.user = dec 
-        next()
-      }
-      else{
-        return res.status(403).json({error: D})
-      }
-    }
-    catch(error){
-      console.error(error.message)
-      return res.status(401).json({error: D})
-    }
-}
-
-const TK = (req, res, next) => {
-    const {token} = req.cookies
-
-  if(!token){
-    return res.status(401).json({error: D})
-  }
-    try{
-        const dec = jwt.verify(token, process.env.JWT)
-        req.user = dec
-        next()
-    }
-    catch(error){
-        console.error(error.message)
-        return res.status(401).json({error: D})
-    }
-}
-
-const Kk = (req, res, next) => {
-    const {token} = req.cookies
-    if(!token){
-      return res.status(401).json({error: D})
-    }
-    try{
-      const dec = jwt.verify(token, process.env.JWT)
-      req.user = dec
-      next()
-    }
-    catch(error){
-      console.error(error.message)
-      return res.status(401).json({error: D})
-    }
-}
-
-//got it
-const ACc = (req, res, next) => {
-  const {token} = req.cookies  
-  if(!token){
-    return res.status(401).json({error: D})
-  }
-  try{
-    const dec = jwt.verify(token, process.env.JWT)
-    if(dec.role === "admin"){
-      req.user = dec
-      next()
-    }
-    else{
-      return res.status(403).json({error: D})
-    }
-  catch(error){
-      console.error(error.message)
-      return res.status(401).json({error: D})
-  }
-}
-
-
-
 
 const Acheack = (req, res, next) => {
   // 1. Get the token from the cookie
@@ -136,8 +57,8 @@ mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error)
 // This function runs when someone visits the server's root URL (e.g., http://localhost:3000/)
 app.get('/', async (req, res) => {
   try{
-    const allusers = await User.find()
-    res.status(202).json(allusers)
+    const allp = await Posts.find()
+    res.status(202).json(allp)
   }
   catch(error){
     res.status(500).json({error: error.message})
@@ -145,24 +66,12 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.post('/api/data', Tcheack, async (req, res) => {
-  try{
-    const {nuser} = req.body
-    const Nuser = new User(nuser)
-    const Nu = await Nuser.save()
-    res.status(201).json(Nu)
-  }
-  catch(error){
-    console.error(error.message)
-    res.status(500).json({error: error.message})
-  }
-})
 
 // 2. Define a different Route Handler (GET /api/status)
 app.delete('/api/data', Tcheack, Acheack, async (req, res) => {
   try{// Respond with a JSON object (common for APIs)
     const {id} = req.body
-    NdataF = await User.findByIdAndDelete(id)
+    NdataF = await Posts.findByIdAndDelete(id)
       if (!NdataF) {
         return res.status(404).json({user: "user not found"})
       }
@@ -177,7 +86,7 @@ app.delete('/api/data', Tcheack, Acheack, async (req, res) => {
 app.put('/api/data', Tcheack, async (req, res) => {
   try{
     const {Epost, id} = req.body
-    epost = await User.findByIdAndUpdate(id, Epost, {new: true})
+    epost = await Posts.findByIdAndUpdate(id, Epost, {new: true})
     if(!epost){
       return res.status(404).json({user: "user not found"})
     }
@@ -219,6 +128,19 @@ app.post('/login', async (req, res) => {
 
 app.post('/logout', async (req, res) => {
 
+})
+
+app.post('/reg', async (req, res) => {
+  try{
+    const {nuser} = req.body
+    const Nuser = new User(nuser)
+    const Nu = await Nuser.save()
+    res.status(201).json(Nu)
+  }
+  catch(error){
+    console.error(error.message)
+    res.status(500).json({error: error.message})
+  }
 })
 
 // 3. Start the Server and Listen to the Port
