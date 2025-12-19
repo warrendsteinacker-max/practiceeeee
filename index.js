@@ -104,7 +104,7 @@ app.post('/api/data', async(req, res) => {
     const newp = new Posts(Npost)
     const np = await newp.save()
     if(np){
-      return res.status(201).json({noerror: good})
+      return res.status(201).json({noerror: "good"})
       }
     }
   catch(error){
@@ -112,6 +112,8 @@ app.post('/api/data', async(req, res) => {
     return res.status(500).json({error: error.message})
   }
 })
+
+app.post('')
 //do npm installs
 app.post('/login', async (req, res) => {
     try{
