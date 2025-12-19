@@ -35,3 +35,19 @@ app.post('/api/data', async(req, res) => {
         return res.status(500).json({error: error.message})
     }
 })
+
+
+app.delete('/api/data', async(req, res) => {
+    const {id} = req.body
+    try{
+        const DP = await Posts.findByIdAndDelete(id)
+        if(!DP){
+            return res.status(403).json({error: "m"})
+        } 
+        return res.status(200).json({noerror: "m"})
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({error: error.message})
+    }
+})
