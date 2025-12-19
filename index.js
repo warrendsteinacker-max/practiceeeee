@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const User = require('./userDB');
 const { jwt } = require('jsonwebtoken');
 const port = 8080;
+const rateLimit = require('express-rate-limit');
 
 
 const Acheack = (req, res, next) => {
@@ -49,12 +50,21 @@ const Tcheack = (req, res, next) => {
     }
 }
 
+const postLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 POST requests per window
+  message: { error: "Too many requests, please try again in 15 minutes." },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 config()
 
+
 mongoose.connect(process.env.MURI).then(() => console.log("good")).catch((error) => console.error(error.message))
-// 1. Define a Route Handler (GET /)
-// This function runs when someone visits the server's root URL (e.g., http://localhost:3000/)
+
+
+
 app.get('/', async (req, res) => {
   try{
     const allp = await Posts.find()
