@@ -30,6 +30,17 @@ app.post('/login', async(req, res) => {
         if(!isMatch){
             return res.status(401).json({e: "g"})
         }
+
+        const payload = {id: Luser.id}
+
+        const Rtoken = jwt.sign(payload, process.env.JWT, {expiresIn: '10m'})
+        const Atoken = jwt.sign(payload, process.env.JWT, {expiresIn: '1m'})
+
+        res.cookie('token', Atoken, {httpOnly: true, secure: process.env.aa === 'production', sameSite: 'strict', maxAge: 90000000 })
+        res.cookie('refreshtoken', Rtoken, {httpOnly: true, secure: process.env.aa === 'production', sameSite: 'strict', maxAge: 99999999999999})
+
+        await Luser.save()
+
         return res.status(200).json({e: "g"})
     }
     catch(error){
