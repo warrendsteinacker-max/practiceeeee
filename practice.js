@@ -26,7 +26,8 @@ app.post('/login', async(req, res) => {
         if(!Luser){
             return res.status(401).json({e: "g"})
         }
-        if(Luser.password !== pas){
+        const isMatch = await bcrypt.compare(pas, Luser.password)
+        if(!isMatch){
             return res.status(401).json({e: "g"})
         }
         return res.status(200).json({e: "g"})
