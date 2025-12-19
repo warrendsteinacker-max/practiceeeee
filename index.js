@@ -113,62 +113,49 @@ app.post('/api/data', async(req, res) => {
   }
 })
 
-app.post('/login', (req, res) => {
-    const {username, pas} = req.body
-    try{
-      const user = awiat User.findOne({username})
-      if(!user){
-        return res.status(403).json({error: error.message})
-      }
-      const isMatch = await bycrypt.compair(pas, user.password)
-      if(!isMatch){
-        return res.status(403).json({error: error.message})
-      }
-      payload = user.pas === process.env.Apas ? "admin":"user"
 
-      const payload = {id: user.id, role: role}
-      const token = jwt.sign(payload, process.env.JWT, {expiresIn: '1h'})
-      res.cookie('token', token, {
-            httpOnly: true, // Prevents JS access (XSS protection)
-            secure: process.env.NODE_ENV === 'production', // Only HTTPS in prod
-            sameSite: 'strict', // Prevents CSRF attacks
-            maxAge: 3600000 // 1 hour in milliseconds
-        })
-        return res.status(200).json({ message: "Logged in", role: payload.role })
-    }
-    catch(error){
-      console.error(error.message)
-      return res.status(401).json({error: error.message})
-    }
-})
-//do npm installs
 app.post('/login', async (req, res) => {
-    try{
-      const {username, pas} = req.body
-      const user = await User.findOne({username})
-      if(!user){
-        return res.status(404).json({ress: fail})
-      }
-      const isaMatch = await bycript.compair(pas, username.password)
-      if(!isaMatch){
-        return res.status(404).json({ress: fail})
-      }
-      const role = pas === process.env.Apas ? "admin" : "user"
-      const payload = {id: user.id, role: role}
-      const token = jwt.sign(payload, process.env.JWT, {expiresIn: '1h'})
-      res.cookie('token', token, {
-            httpOnly: true, // Prevents JS access (XSS protection)
-            secure: process.env.NODE_ENV === 'production', // Only HTTPS in prod
-            sameSite: 'strict', // Prevents CSRF attacks
-            maxAge: 3600000 // 1 hour in milliseconds
-        })
-        return res.status(200).json({ message: "Logged in", role: payload.role })
-      }
-      catch(error){
-        console.error(error.message)
-        res.status(500).json({error: error.message})
+    const { username, pas } = req.body;
+    
+    try {
+        // 2. Fixed spelling: await
+        const user = await User.findOne({ username });
+        
+        if (!user) {
+            // 3. Send a clear string, not error.message (which is undefined here)
+            return res.status(403).json({ error: "Invalid username or password" });
+        }
+
+        // 4. Fixed spelling: bcrypt.compare
+        const isMatch = await bcrypt.compare(pas, user.password);
+        if (!isMatch) {
+            return res.status(403).json({ error: "Invalid username or password" });
+        }
+
+        // 5. Determine the role correctly
+        const userRole = user.password === process.env.Apas ? "admin" : "user";
+
+        // 6. Create the payload for the token
+        const payload = { id: user._id, role: userRole };
+        
+        const token = jwt.sign(payload, process.env.JWT, { expiresIn: '1h' });
+
+        // 7. Set the cookie
+        res.cookie('token', token, {
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production', 
+            sameSite: 'strict', 
+            maxAge: 3600000 
+        });
+
+        // 8. Success!
+        return res.status(200).json({ message: "Logged in", role: userRole });
+
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json({ error: "Server Error" });
     }
-})
+});
 
 app.post('/logout', async (req, res) => {
 
