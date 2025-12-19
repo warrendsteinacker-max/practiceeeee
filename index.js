@@ -7,8 +7,36 @@ const { jwt } = require('jsonwebtoken');
 const port = 8080;
 
 
-//need to do npm installs
-const Acheack = async (req, res, next)
+const Acheack = (req, res, next) => {
+  // 1. Get the token from the cookie
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ message: "No token, authorization denied" });
+  }
+
+  try {
+    // 2. Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT);
+    
+    // 3. Check the role we stored in the payload
+    if (decoded.role === "admin") {
+      req.user = decoded; // Optional: store user info for the next function
+      next();
+    } else {
+      return res.status(403).json({ access: "denied" });
+    }
+  } catch (err) {
+    res.status(401).json({ message: "Token is not valid" });
+  }
+};
+
+const Tcheack = (req, res, next) => {
+    const token = req.cookies.token
+    if(!token){
+      res.status(404).json({sign_in: invaled token})
+    }
+}
 
 
 config()
@@ -74,11 +102,16 @@ app.put('/api/data', Tcheack, async (req, res) => {
 app.post('/login', async (req, res) => {
     try{
       const {username, pas} = req.body
-      const user = await User.findOne({pas})
+      const user = await User.findOne({username})
       if(!user){
         return res.status(404).json({ress: fail})
       }
-      const payload = pas === process.env.Apas ? "admin" : "user"
+      const isaMatch = await bycript.compair(pas, username.password)
+      if(!isaMatch){
+        return res.status(404).json({ress: fail})
+      }
+      const role = pas === process.env.Apas ? "admin" : "user"
+      const payload = {id: user.id, role: role}
       const token = jwt.sign(payload, process.env.JWT, {expiresIn: '1h'})
       res.cookie('token', token, {
             httpOnly: true, // Prevents JS access (XSS protection)
