@@ -64,9 +64,9 @@ const Acheack = (req, res, next) => {
       return res.status(403).json({error: D})
     } 
   }
-  catch(error.message)
+  catch(error){
     console.error(error.message)
-    return res.status(401).json({error: D})
+    return res.status(401).json({error: D})}
 }
 
 
