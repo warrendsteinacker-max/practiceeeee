@@ -158,6 +158,18 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/logout', async (req, res) => {
+  try{
+    res.clearCookie( 'token',{
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production', 
+            sameSite: 'strict'}
+    )
+    return res.status(200).json({noerror: "good"})
+  }
+  catch(error){
+    console.error(error.message)
+    return res.status(500).json({error: error.message})
+  }
 
 })
 
