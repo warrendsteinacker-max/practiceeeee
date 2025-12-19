@@ -46,7 +46,28 @@ const TK = (req, res, next) => {
     }
 }
 
+const Acheack = (req, res, next) => {
 
+  const {token} = req.cookies
+
+  if(!token){
+    return res.status(401).json({error: D})
+  }
+
+  try{
+    const dec = jwt.verify(token, process.env.JWT)
+    if(dec.role === "admin"){
+      req.user = dec
+      next()
+    }
+    else{
+      return res.status(403).json({error: D})
+    } 
+  }
+  catch(error.message)
+    console.error(error.message)
+    return res.status(401).json({error: D})
+}
 
 
 const Acheack = (req, res, next) => {
