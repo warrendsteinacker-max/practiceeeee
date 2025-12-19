@@ -1,3 +1,5 @@
+const { findByIdAndUpdate } = require("./userDB")
+
 app =express()
 
 app.use(express.json)
@@ -49,5 +51,20 @@ app.delete('/api/data', async(req, res) => {
     catch(error){
         console.error(error.message)
         return res.status(500).json({error: error.message})
+    }
+})
+
+app.put('/api/data', async(req, res) => {
+    const {Epost, id} = req.body
+    try{
+    const Ep = await Posts.findByIdAndUpdate(id, Epost, {new: true})
+    if(!Ep){
+        return res.status(403).json({e: "d"})
+    }
+    return res.status(200).json({e: "d"})
+    } 
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({e: "e"})
     }
 })
