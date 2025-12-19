@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const hpp = require('hpp');
 const morgan = require('morgan');
+const xss = require('xss-clean');
 
 // Models
 const User = require('./userDB'); 
@@ -19,6 +20,14 @@ const Posts = require('./postDB'); // Ensure this matches your filename
 const app = express();
 const port = 8080;
 config();
+
+const requiredEnv = ['MURI', 'JWT_ACCESS', 'JWT_REFRESH', 'Apas'];
+requiredEnv.forEach((key) => {
+    if (!process.env[key]) {
+        console.error(`FATAL ERROR: ${key} is not defined in .env`);
+        process.exit(1); // Stop the server
+    }
+});
 
 
 // Validation Logic
@@ -110,6 +119,7 @@ app.use(cors(corsOptions));
 app.use(express.json());        
 app.use(cookieParser());        
 app.use(mongoSanitize());
+app.use(xss())
 app.use(hpp());
 
 mongoose.connect(process.env.MURI).then(() => console.log("connected")).catch((error) => console.error(error.message))
@@ -183,44 +193,45 @@ app.post('/login', postLimiter, async (req, res) => {
     
     try {
         const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(403).json({ error: "Invalid credentials" });
+        if (!user) return res.status(403).json({ error: "Invalid credentials" });
+
+        // 1. Check if account is currently locked
+        if (user.lockUntil && user.lockUntil > Date.now()) {
+            const remainingTime = Math.ceil((user.lockUntil - Date.now()) / 60000);
+            return res.status(423).json({ error: `Account locked. Try again in ${remainingTime} minutes.` });
         }
 
         const isMatch = await bcrypt.compare(pas, user.password);
+
         if (!isMatch) {
+            // 2. Increment failed attempts
+            user.loginAttempts += 1;
+            
+            if (user.loginAttempts >= 5) {
+                user.lockUntil = Date.now() + 30 * 60 * 1000; // Lock for 30 minutes
+                await user.save();
+                return res.status(423).json({ error: "Too many failed attempts. Account locked for 30 minutes." });
+            }
+            
+            await user.save();
             return res.status(403).json({ error: "Invalid credentials" });
         }
 
-        // Logic for Admin role
+        // 3. Success! Reset attempts and locking
+        user.loginAttempts = 0;
+        user.lockUntil = undefined;
+        
         const userRole = user.password === process.env.Apas ? "admin" : "user";
         const payload = { id: user._id, role: userRole };
 
-        // 1. Generate Access Token (15 minutes)
         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS, { expiresIn: '15m' });
-
-        // 2. Generate Refresh Token (7 days)
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_REFRESH, { expiresIn: '7d' });
 
-        // 3. SAVE Refresh Token to Database
         user.refreshToken = refreshToken; 
         await user.save();
 
-        // 4. Send Access Token Cookie
-        res.cookie('token', accessToken, {
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'strict', 
-            maxAge: 900000 // 15 mins
-        });
-
-        // 5. Send Refresh Token Cookie
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 604800000 // 7 days
-        });
+        res.cookie('token', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 900000 });
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 604800000 });
 
         return res.status(200).json({ message: "Logged in", role: userRole });
 

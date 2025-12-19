@@ -1,22 +1,25 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-// Define the Schema
-const userschem = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     person: {
-        id: Number,
-        name: String,
-        password: Number, 
-        username: String,
-        refreshToken: { type: String }
-    }
+        name: { type: String, required: true },
+        password: { type: String, required: true }, // Must be String for Hash
+        username: { type: String, required: true, unique: true },
+    },
+    role: { 
+        type: String, 
+        enum: ['user', 'admin'], 
+        default: 'user' 
+    },
+    refreshToken: { type: String },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Number } 
 });
 
-userschem.pre('save', async function(next) {
-    // 'this' refers to the user document
-    // We only hash if the password is new or being changed
+// Auto-hash password before saving
+userSchema.pre('save', async function(next) {
     if (!this.isModified('person.password')) return next();
-
     try {
         const salt = await bcrypt.genSalt(10);
         this.person.password = await bcrypt.hash(this.person.password, salt);
@@ -26,12 +29,4 @@ userschem.pre('save', async function(next) {
     }
 });
 
-
-
-
-// Create the Model
-// Note: Do NOT put 'userschem' in quotes. Pass the actual variable.
-const User = mongoose.model('User', userschem);
-
-// Export the Model
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
