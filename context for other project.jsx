@@ -107,6 +107,8 @@ export const DataProvider = ({ children }) => {
 
     ////////user login func/////////
 
+    //////dont forget to fix reg route in back end for only admin use 
+
     // Provide everything through the value object
     return (
         <FeatureContext.Provider value={{ 
