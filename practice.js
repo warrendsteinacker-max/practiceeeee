@@ -4,6 +4,24 @@ app =express()
 
 app.use(express.json)
 
+
+const Tcheack = (req, res, next) => {
+    const token = req.cookies.token
+    
+    if(!token){
+        return res.status(400).json({error: "d"})
+    }
+    
+    try{
+        const dec = jwt.verify(token, process.env.JWT)
+        req.user = dec.id
+        next()
+    }
+    catch(error){
+        return res.status(400).json({error: "d"})
+    }
+}
+
 app.post('/reg', async (req, res) => {
     const {Nuser} = req.body
     if(!Nuser){
