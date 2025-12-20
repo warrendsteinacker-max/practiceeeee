@@ -51,15 +51,32 @@ export const DataProvider = async ({children}) => {
     }, [])
 
     /// func to make post for posts to back end
-    const MDpost = async() => {
+    const MDpost = async(Npost) => {
+        try{
+            axios.post()
+        }
+        catch(error){
 
+        }
     }
-
+//// edit post func 
     const Epost = async() => {
+        try{
 
+        }
+        catch(error){
+            
+        }
     }
+/// del func for admin del posts
+    const Dpost = async() => {
+                try{
 
-    const
+        }
+        catch(error){
+            
+        }
+    }
 
     return(<FeatureContext.Provider value={{}}>{children}</FeatureContext.Provider>)
 
