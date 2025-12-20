@@ -79,17 +79,20 @@ const Mpost = async (NNpost) => {
         }  
     }
 /// del func for admin del posts
-    const Dpost = async(id) => {
-        
-        try{
-            const NDP = axios.delete('api/data', id)
-            const np = posts.filter((post) => post._id !== id)
-            setPosts(np)
-        }
-        catch(error){
-            console.error(error.message)   
-        }
+const Dpost = async (id) => {
+    try {
+        // 1. You must await the call
+        // 2. Pass the ID in the URL (standard REST practice)
+        await axios.delete(`/api/data/${id}`); 
+
+        // 3. Filter the state using the ID
+        const np = posts.filter((post) => post._id !== id);
+        setPosts(np);
     }
+    catch (error) {
+        console.error("Delete failed:", error.message);
+    }
+}
 
     return(<FeatureContext.Provider value={{}}>{children}</FeatureContext.Provider>)
 
