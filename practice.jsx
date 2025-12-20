@@ -39,7 +39,7 @@ export const DataProvider = async ({children}) => {
     }
     fetchU()
     }, [])
-////useeffect to fetch post data Posts but 
+////useeffect to fetch post data Posts /api/data 
     useEffect(()=>{
         
         try{
@@ -93,6 +93,11 @@ const Dpost = async (id) => {
         console.error("Delete failed:", error.message);
     }
 }
+
+///func for admin post to creat other users '/admin/p'
+
+
+////func for admin to edit user roles '/admin/e'
 
     return(<FeatureContext.Provider value={{}}>{children}</FeatureContext.Provider>)
 
