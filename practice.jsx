@@ -79,12 +79,15 @@ const Mpost = async (NNpost) => {
         }  
     }
 /// del func for admin del posts
-    const Dpost = async() => {
-                try{
-
+    const Dpost = async(id) => {
+        
+        try{
+            const NDP = axios.delete('api/data', id)
+            const np = posts.filter((post) => post._id !== id)
+            setPosts(np)
         }
         catch(error){
-            
+            console.error(error.message)   
         }
     }
 
