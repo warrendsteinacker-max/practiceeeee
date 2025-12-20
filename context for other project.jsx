@@ -104,6 +104,9 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+
+    ////////user login func/////////
+
     // Provide everything through the value object
     return (
         <FeatureContext.Provider value={{ 
