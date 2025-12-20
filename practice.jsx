@@ -12,8 +12,24 @@ export const DataProvider = async ({children}) => {
     const [] = useState
     ///usestate for api for posts
     const [] = useState
+    ///usestate for api for authentication sign in reg logout
+    const [] = useState
+    ///usestate for api for admin edit roles make new users and delete
+    const [] = useState
+    ///state for loading
+    const [] = useState
 
-    ///usestate for api for authentication
+    
+    ////useeffect to fetch admin data Users but he can still manipulate posts
+    useEffect(()=>{
+        
+        try{
+
+        }
+        catch(error){
+
+        }
+    })
 
     return(<FeatureContext.Provider value={{}}>{children}</FeatureContext.Provider>)
 
