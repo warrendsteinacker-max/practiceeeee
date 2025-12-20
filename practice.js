@@ -22,6 +22,16 @@ const Tcheack = (req, res, next) => {
     }
 }
 
+const Acheack = (Prole) => {
+    return (req, res, next) => {
+        const {role} = req.user
+        if(role !== Prole){
+            return res.status(400).json({error: "d"})
+        }
+        next()
+    }
+} 
+
 app.post('/reg', async (req, res) => {
     const {Nuser} = req.body
     if(!Nuser){
