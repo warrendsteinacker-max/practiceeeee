@@ -1,6 +1,6 @@
 const { findByIdAndUpdate } = require("./userDB")
 
-app =express()
+app = express()
 
 app.use(express.json)
 
@@ -28,8 +28,12 @@ app.post('/reg', async (req, res) => {
         return res.status(400).json({error: "d"})
     }
     try{
-        const nuser = new User(Nuser)
-        const nuse = await nuser.save()
+        const {pas, username} = Nuser
+        const salt = await bcrypt.genSalt(12)
+        const pass = await bcrypt.hash(pas, salt)
+        const nuser = {pas: pass, username: username}
+        const nnuser = new User(nuser)
+        const nuse = await nnuser.save()
         return res.status(202).json({noerror: "A"})}
     catch(error) {
         console.error(error.message)
