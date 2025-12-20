@@ -71,7 +71,7 @@ app.post('/refresh', async (req, res) => {
     }
 });
 
-app.post('/reg', async (req, res) => {
+app.post('/reg', Tcheack, Acheack, async (req, res) => {
     const {Nuser} = req.body
     if(!Nuser){
         return res.status(400).json({error: "d"})
