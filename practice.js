@@ -19,6 +19,19 @@ app.post('/reg', async (req, res) => {
     }
 })
 
+app.post('/logout', (req, res) => {
+    
+    try{
+        res.clearCookie('token', {httpOnly: true, secure: process.env.aa === 'production', sameSite: 'strict'} )
+        res.clearCookie('refreshtoken', {httpOnly: true, secure: process.env.aa === 'production', sameSite: 'strict'}  )
+        return res.status(200).json({noerror: 'n'})
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({error: error.message})
+    }
+})
+
 app.post('/login', async(req, res) => {
     const {pas, use} = req.body
     try{
