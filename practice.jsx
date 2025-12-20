@@ -51,11 +51,11 @@ export const DataProvider = async ({children}) => {
     }, [])
 
     /// func to make post for posts to back end
-    const MDpost = async(Npost) => {
+    const Mpost = async(NNpost) => {
         try{
-            await axios.post('api/data', Npost)
-            const Nposts = posts.map((post) => { if(Npost._id !== post._id){return post} else{return Npost}})
-            setPosts(Nposts)
+            await axios.post('api/data', NNpost)
+            const NNNposts = [...posts, NNposts]
+            setPosts(NNNposts)
         }
         catch(error){
             console.error(error.message)
