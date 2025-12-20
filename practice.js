@@ -1,7 +1,7 @@
-const { findByIdAndUpdate } = require("./userDB")
+const { app } = require("firebase-admin")
+
 
 app = express()
-
 
 ///////////////////////////middle funcs////////////////////////////////////////////////
 app.use(express.json)
@@ -135,7 +135,7 @@ app.post('/login', async(req, res) => {
 
 //data routes///////////////////////////////////////////////////
 
-app.post('/api/data', async(req, res) => {
+app.post('/api/data', Tcheack, async(req, res) => {
     const {npost} = req.body
         if(!npost){
             return res.status(401).json({error: "D"})    
@@ -155,22 +155,7 @@ app.post('/api/data', async(req, res) => {
 })
 
 
-app.delete('/api/data', async(req, res) => {
-    const {id} = req.body
-    try{
-        const DP = await Posts.findByIdAndDelete(id)
-        if(!DP){
-            return res.status(403).json({error: "m"})
-        } 
-        return res.status(200).json({noerror: "m"})
-    }
-    catch(error){
-        console.error(error.message)
-        return res.status(500).json({error: error.message})
-    }
-})
-
-app.put('/api/data', async(req, res) => {
+app.put('/api/data', Tcheack, async(req, res) => {
     const {Epost, id} = req.body
     try{
     const Ep = await Posts.findByIdAndUpdate(id, Epost, {new: true})
@@ -185,7 +170,7 @@ app.put('/api/data', async(req, res) => {
     }
 })
 
-app.get('/api/data', async(req, res) => {
+app.get('/api/data', Tcheack, async(req, res) => {
     try{
         const FD = await Posts.find()
         
@@ -196,3 +181,50 @@ app.get('/api/data', async(req, res) => {
         return res.status(500).json({e: "e"})
     }
 })
+
+//admin routes//////////////////////////
+
+///admin route to delet posts//////////
+app.delete('/api/data', Tcheack, Acheack(admin), async(req, res) => {
+    const {id} = req.body
+    try{
+        const DP = await Posts.findByIdAndDelete(id)
+        if(!DP){
+            return res.status(403).json({error: "m"})
+        } 
+        return res.status(200).json({noerror: "m"})
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({error: error.message})
+    }
+})
+
+//admin route to delete users/////////////////////////////////
+app.delete('/admin/d', Tcheack, Acheack(admin), async(req, res) => {
+    const {id} = req.body
+    try{
+        const DU = await User.findByIdAndDelete(id)
+        return res.status(200).json({noerror: "N"})
+        }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({error: error.message})
+    }
+})
+
+///admin route to edit user roles/////////////////////////////
+app.put('/admin/e', Tcheack, Acheack(admin), async(req, res) => {
+    const {id, Euser} = req.body
+
+    try{
+        const EU = await User.findByIdAndUpdate(id, Euser, {new: true})
+        return res.status(500).json({error: error.message})
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({error: error.message})
+    }
+})
+
+/////admin route to create users//////////////////////////////
