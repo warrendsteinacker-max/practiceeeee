@@ -201,7 +201,7 @@ app.delete('/api/data', Tcheack, Acheack(admin), async(req, res) => {
 })
 
 //admin route to delete users/////////////////////////////////
-app.delete('/admin/d', Tcheack, Acheack(admin), async(req, res) => {
+app.delete('/admin/d', Tcheack, Acheack("admin"), async(req, res) => {
     const {id} = req.body
     try{
         const DU = await User.findByIdAndDelete(id)
@@ -214,12 +214,12 @@ app.delete('/admin/d', Tcheack, Acheack(admin), async(req, res) => {
 })
 
 ///admin route to edit user roles/////////////////////////////
-app.put('/admin/e', Tcheack, Acheack(admin), async(req, res) => {
+app.put('/admin/e', Tcheack, Acheack("admin"), async(req, res) => {
     const {id, Euser} = req.body
 
     try{
         const EU = await User.findByIdAndUpdate(id, Euser, {new: true})
-        return res.status(500).json({error: error.message})
+        return res.status(200).json({noerror: "d"})
     }
     catch(error){
         console.error(error.message)
