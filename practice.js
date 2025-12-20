@@ -2,6 +2,8 @@ const { findByIdAndUpdate } = require("./userDB")
 
 app = express()
 
+
+///////////////////////////middle funcs////////////////////////////////////////////////
 app.use(express.json)
 
 
@@ -31,6 +33,43 @@ const Acheack = (Prole) => {
         next()
     }
 } 
+
+//Auth routes////////////////////////////////////////////////////////////
+
+app.post('/refresh', async (req, res) => {
+    // 1. Get the refresh token from cookies
+    const refreshToken = req.cookies.refreshtoken;
+
+    if (!refreshToken) {
+        return res.status(401).json({ error: "No refresh token" });
+    }
+
+    try {
+        // 2. Verify the refresh token
+        // Use the same secret you used to sign it in the login route
+        const dec = jwt.verify(refreshToken, process.env.JWT);
+
+        // 3. Optional: Find user in DB to make sure they still exist/aren't banned
+        const user = await User.findById(dec.id);
+        if (!user) return res.status(401).json({ error: "User not found" });
+
+        // 4. Create a NEW Access Token
+        const newPayload = { id: user.id, role: user.role };
+        const newAtoken = jwt.sign(newPayload, process.env.JWT, { expiresIn: '15m' });
+
+        // 5. Send the new token back in a cookie (or JSON for React Native)
+        res.cookie('token', newAtoken, {
+            httpOnly: true,
+            secure: process.env.aa === 'production',
+            sameSite: 'strict',
+            maxAge: 900000 // 15 minutes
+        });
+
+        return res.status(200).json({ noerror: "A", token: newAtoken });
+    } catch (error) {
+        return res.status(403).json({ error: "Invalid refresh token" });
+    }
+});
 
 app.post('/reg', async (req, res) => {
     const {Nuser} = req.body
@@ -93,6 +132,8 @@ app.post('/login', async(req, res) => {
         return res.status(500).json({e: "g"})
     }
 })
+
+//data routes///////////////////////////////////////////////////
 
 app.post('/api/data', async(req, res) => {
     const {npost} = req.body
