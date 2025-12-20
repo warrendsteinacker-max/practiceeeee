@@ -228,3 +228,20 @@ app.put('/admin/e', Tcheack, Acheack("admin"), async(req, res) => {
 })
 
 /////admin route to create users//////////////////////////////
+
+app.post('/admin/p', Tcheack, Acheack("admin"), async(req, res) => {
+    const {Apost} = req.body
+    try{
+        const {pas, username, name} = Apost
+        const salt = await bcrypt.genSalt(12)
+        const pass = await bcrypt.hash(pas, salt)
+        const nnuser = {pas: pass, username: username, name: name}
+        const NU = new User(nnuser)
+        await NU.save()
+        return res.status(200).json({noerror: "D"}) 
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({error: error.message})
+    }
+})
