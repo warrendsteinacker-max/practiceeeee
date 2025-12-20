@@ -99,6 +99,8 @@ const Dpost = async (id) => {
 
 ////func for admin to edit user roles '/admin/e'
 
+///// func for admin to delet users
+
     return(<FeatureContext.Provider value={{}}>{children}</FeatureContext.Provider>)
 
 }
