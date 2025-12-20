@@ -54,7 +54,7 @@ export const DataProvider = async ({children}) => {
     const MDpost = async(Npost) => {
         try{
             await axios.post('api/data', Npost)
-            const Nposts = posts.map((post) => { if(Nposts === post){return Npost} else{return post}})
+            const Nposts = posts.map((post) => { if(Npost._id !== post._id){return post} else{return Npost}})
             setPosts(Nposts)
         }
         catch(error){
@@ -62,13 +62,15 @@ export const DataProvider = async ({children}) => {
         }
     }
 //// edit post func 
-    const Epost = async() => {
+    const Epost = async(Npost) => {
         try{
-
+            await axios.put('api/data', Npost)
+            const Nposts = posts.map((post) => { if(Npost._id !== post._id){return post} else{return Npost}})
+            setPosts(Nposts)
         }
         catch(error){
-            
-        }
+            console.error(error.message)
+        }  
     }
 /// del func for admin del posts
     const Dpost = async() => {
