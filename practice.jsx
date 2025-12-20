@@ -22,6 +22,25 @@ export const DataProvider = async ({children}) => {
     
     ////useeffect to fetch admin data Users but he can still manipulate posts
     useEffect(()=>{
+        setLoading(true)
+        const fetchU = async() => {
+
+        try{
+            const response = await axios.get('/api/users')
+            const d = response.data
+            setUsers(d)
+        }
+        catch(error){
+            console.error(error.message)
+        }
+        finally{
+            setLoading(false)
+        }
+    }
+    fetchU()
+    }, [])
+////useeffect to fetch post data Posts but 
+    useEffect(()=>{
         
         try{
 
@@ -29,7 +48,18 @@ export const DataProvider = async ({children}) => {
         catch(error){
 
         }
-    })
+    }, [])
+
+    /// func to make post for posts to back end
+    const MDpost = async() => {
+
+    }
+
+    const Epost = async() => {
+
+    }
+
+    const
 
     return(<FeatureContext.Provider value={{}}>{children}</FeatureContext.Provider>)
 

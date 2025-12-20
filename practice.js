@@ -245,3 +245,15 @@ app.post('/admin/p', Tcheack, Acheack("admin"), async(req, res) => {
         return res.status(500).json({error: error.message})
     }
 })
+
+app.get('/api/users', Tcheack, async(req, res) => {
+    try{
+        const UUD = await User.find()
+        
+        return res.status(200).json({e: "e", data: UUD})
+    }
+    catch(error){
+        console.error(error.message)
+        return res.status(500).json({e: "e"})
+    }
+})
