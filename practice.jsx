@@ -51,16 +51,22 @@ export const DataProvider = async ({children}) => {
     }, [])
 
     /// func to make post for posts to back end
-    const Mpost = async(NNpost) => {
-        try{
-            await axios.post('api/data', NNpost)
-            const NNNposts = [...posts, NNposts]
-            setPosts(NNNposts)
-        }
-        catch(error){
-            console.error(error.message)
-        }
+const Mpost = async (NNpost) => {
+    try {
+        // 1. Post to the server (Vite proxy handles the localhost part)
+        const response = await axios.post('/api/data', NNpost);
+        
+        // 2. The server returns the NEW document created by Mongo
+        // This object now has the auto-generated _id
+        const savedData = response.data;
+
+        // 3. Update state with the official DB version
+        setPosts([...posts, savedData]);
     }
+    catch (error) {
+        console.error(error.message);
+    }
+}
 //// edit post func 
     const Epost = async(Npost) => {
         try{
