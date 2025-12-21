@@ -163,7 +163,102 @@ app.listen(3000, () => console.log('Server running on port 3000'));
 
 
 
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
+const { JSONFileSyncPreset } = require('lowdb/node');
+// The database structure now stores passwords exactly as typed
+const defaultData = { users: [] }; 
+const db = JSONFileSyncPreset('db.json', defaultData);
+
+const app = express();
+app.use(express.json()); 
+app.use(cookieParser()); 
+
+/////////////////////////// Middlewares ////////////////////////////////////////////////
+
+const Tcheack = (req, res, next) => {
+    const token = req.cookies.token;
+    if(!token) return res.status(401).json({error: "Access denied"});
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT);
+        req.user = decoded; 
+        next();
+    } catch(error) {
+        return res.status(403).json({error: "Invalid token"});
+    }
+}
+
+const UserFolderHandler = (req, res, next) => {
+    const userId = req.user.id;
+    const content = req.body;
+    const safeUserId = String(userId).replace(/[^a-z0-9]/gi, '_');
+    const userDir = path.join(__dirname, 'storage', 'users', safeUserId);
+
+    try {
+        if (!fs.existsSync(userDir)) {
+            fs.mkdirSync(userDir, { recursive: true });
+        }
+
+        const timestamp = new Date().toISOString().replace(/:/g, '-');
+        const fileName = `${req.method}_log_${timestamp}.json`;
+        const filePath = path.join(userDir, fileName);
+
+        const fileData = {
+            timestamp: new Date().toLocaleString(),
+            action: req.method,
+            data: content
+        };
+
+        fs.writeFileSync(filePath, JSON.stringify(fileData, null, 2));
+        next();
+    } catch (err) {
+        return res.status(500).json({ error: "Failed to log action" });
+    }
+}
+
+/////////////////////////// Auth Routes ////////////////////////////////////////////
+
+app.post('/login', (req, res) => {
+    const { pas, use } = req.body; // 'pas' is the password from the frontend
+    
+    try {
+        // Find user in Lowdb
+        const Luser = db.data.users.find(u => u.username === use);
+        
+        if(!Luser) return res.status(401).json({ e: "Invalid credentials" });
+
+        // DIRECT STRING COMPARISON (No bcrypt)
+        if(pas !== Luser.pas) {
+            return res.status(401).json({ e: "Invalid credentials" });
+        }
+
+        const payload = { id: Luser.id, role: Luser.role };
+        const Atoken = jwt.sign(payload, process.env.JWT, { expiresIn: '1h' });
+
+        res.cookie('token', Atoken, { httpOnly: true });
+        return res.status(200).json({ status: "Success", role: Luser.role });
+    } catch(error) {
+        return res.status(500).json({ e: "Server error" });
+    }
+});
+
+/////////////////////////// Data Routes ///////////////////////////////////
+
+app.post('/api/data', Tcheack, UserFolderHandler, (req, res) => {
+    res.status(200).json({ status: "Logged" });
+});
+
+app.put('/api/data/:id', Tcheack, UserFolderHandler, (req, res) => {
+    res.status(200).json({ status: "Update Logged" });
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
 
 
 
