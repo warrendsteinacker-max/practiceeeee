@@ -216,7 +216,7 @@ app.delete('/admin/d', Tcheack, Acheack("admin"), async(req, res) => {
 ///admin route to edit user roles/////////////////////////////fix this//////
 app.put('/admin/e', Tcheack, Acheack("admin"), async(req, res) => {
     const {Euser} = req.body
-    const {id} =
+    const {id} = Euser
     try{
         const EU = await User.findByIdAndUpdate(id, Euser, {new: true})
         return res.status(200).json({noerror: "d"})
