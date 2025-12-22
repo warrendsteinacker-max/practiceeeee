@@ -387,6 +387,34 @@ app.delete('/api/data', Tcheack, FileDeleteHandler, (req, res) => {
 app.listen(3000, () => console.log('Server running on port 3000'));
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /////think I might make the code to were users can input there pass in machine one time for one time when they got to work and another time
 /////for when they ended all this useing data function and then calulation for pay and a file creation for that days pay on the computer that day is calulated with documentation on the machine/ computer no GUI in browser required
 
@@ -394,6 +422,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const cors = require('cors'); // Added for Pi connection
 require('dotenv').config();
 
 const { JSONFileSyncPreset } = require('lowdb/node');
@@ -402,6 +431,7 @@ const db = JSONFileSyncPreset('db.json', defaultData);
 
 const app = express();
 app.use(express.json());
+app.use(cors()); // Allow your Pi GUI to talk to the server
 
 // --- Core Logic: Documentation and Calculation ---
 const processTimeLog = (user) => {
@@ -418,10 +448,12 @@ const processTimeLog = (user) => {
         dayData = JSON.parse(fs.readFileSync(logFile));
     }
 
-    // Toggle: If no start, Clock In. If start exists, Clock Out.
+    let statusMsg = "";
+
     if (!dayData.start) {
         dayData.start = now.toISOString();
-        console.log(`\n\x1b[32m[CLOCK IN] Hello ${user.username}! Started at: ${now.toLocaleTimeString()}\x1b[0m`);
+        statusMsg = `[CLOCK IN] Hello ${user.username}!`;
+        console.log(`\n\x1b[32m${statusMsg} Started at: ${now.toLocaleTimeString()}\x1b[0m`);
     } else {
         dayData.end = now.toISOString();
         const startTime = new Date(dayData.start);
@@ -430,12 +462,16 @@ const processTimeLog = (user) => {
         dayData.totalHours = diffHrs.toFixed(2);
         dayData.dayPay = (diffHrs * user.rate).toFixed(2);
 
-        console.log(`\n\x1b[36m[CLOCK OUT] Goodbye ${user.username}! Ended at: ${now.toLocaleTimeString()}\x1b[0m`);
+        statusMsg = `[CLOCK OUT] Goodbye ${user.username}!`;
+        console.log(`\n\x1b[36m${statusMsg} Ended at: ${now.toLocaleTimeString()}\x1b[0m`);
         console.log(`\x1b[33mToday's Earnings: $${dayData.dayPay} (${dayData.totalHours} hrs)\x1b[0m`);
     }
 
     fs.writeFileSync(logFile, JSON.stringify(dayData, null, 2));
     console.log(`\x1b[90mFile documented in storage/users/${safeUserId}/\x1b[0m`);
+    
+    // IMPORTANT: Return the data so the API can use it!
+    return { statusMsg, dayPay: dayData.dayPay }; 
 };
 
 // --- Machine Terminal UI ---
@@ -445,30 +481,39 @@ const rl = readline.createInterface({
 });
 
 const startMachine = () => {
-    console.log("\n-------------------------------------------");
-    console.log("READY FOR INPUT - PLEASE ENTER YOUR PASSWORD");
-    console.log("-------------------------------------------");
-
-    // This makes the password input invisible in the terminal for privacy
-    rl.question("PASSCODE: ", (inputPass) => {
-        // Find user by password only
+    process.stdout.write("\n-------------------------------------------\nREADY FOR PASSCODE: ");
+    rl.question("", (inputPass) => {
         const user = db.data.users.find(u => u.pas === inputPass);
 
         if (!user) {
-            console.log("\x1b[31m[ERROR] Invalid Passcode. Access Denied.\x1b[0m");
+            console.log("\x1b[31m[ERROR] Invalid Passcode.\x1b[0m");
         } else {
-            // Process the clock-in/out immediately
             processTimeLog(user);
         }
-
-        // Reset the machine for the next person immediately
-        setTimeout(startMachine, 2000); 
+        setTimeout(startMachine, 1500); 
     });
 };
 
-// Start Server & Terminal
-app.listen(3000, () => {
-    console.log('Backend documentation engine running.');
+// --- API Route for Pi GUI ---
+app.post('/api/machine-log', (req, res) => {
+    const { pas } = req.body;
+    const user = db.data.users.find(u => u.pas === pas);
+
+    if (!user) {
+        return res.status(401).json({ error: "Invalid Passcode" });
+    }
+
+    // Now 'result' will actually have the data because we added the return statement
+    const result = processTimeLog(user); 
+
+    res.status(200).json({ 
+        message: result.statusMsg,
+        pay: result.dayPay || "0.00" 
+    });
+});
+
+app.listen(3000, '0.0.0.0', () => { // Listen on 0.0.0.0 for Pi access
+    console.log('Backend documentation engine running on port 3000.');
     startMachine();
 });
 
