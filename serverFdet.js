@@ -387,7 +387,8 @@ app.delete('/api/data', Tcheack, FileDeleteHandler, (req, res) => {
 app.listen(3000, () => console.log('Server running on port 3000'));
 
 
-
+/////think I might make the code to were users can input there pass in machine one time for one time when they got to work and another time
+/////for when they ended all this useing data function and then calulation for pay and a file creation for that days pay on the computer that day is calulated with documentation on the machine/ computer no GUI in browser required
 
 
 
