@@ -473,3 +473,78 @@ app.listen(3000, () => {
 });
 
 
+///// this will be the python front end///
+import tkinter as tk
+from tkinter import messagebox
+import requests
+
+# The URL of your Node.js backend
+SERVER_URL = "http://localhost:3000/api/machine-log"
+
+class KeypadApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Work Clock")
+        self.root.geometry("320x480") # Fits most small Pi screens
+        self.password = ""
+
+        # Display screen
+        self.label = tk.Label(root, text="ENTER PASSCODE", font=("Arial", 18), pady=20)
+        self.label.pack()
+
+        self.display = tk.Entry(root, show="*", font=("Arial", 24), justify='center')
+        self.display.pack(pady=10)
+
+        # Keypad frame
+        btn_frame = tk.Frame(root)
+        btn_frame.pack()
+
+        buttons = [
+            '7', '8', '9',
+            '4', '5', '6',
+            '1', '2', '3',
+            'Clear', '0', 'Enter'
+        ]
+
+        row = 0
+        col = 0
+        for btn in buttons:
+            action = lambda x=btn: self.click(x)
+            tk.Button(btn_frame, text=btn, width=8, height=3, font=("Arial", 12),
+                      command=action).grid(row=row, column=col, padx=2, pady=2)
+            col += 1
+            if col > 2:
+                col = 0
+                row += 1
+
+    def click(self, key):
+        if key == "Enter":
+            self.submit()
+        elif key == "Clear":
+            self.display.delete(0, tk.END)
+        else:
+            self.display.insert(tk.END, key)
+
+    def submit(self):
+        password = self.display.get()
+        if not password:
+            return
+
+        try:
+            # Sends the password to your Node.js backend
+            response = requests.post(SERVER_URL, json={"pas": password})
+            data = response.json()
+
+            if response.status_code == 200:
+                messagebox.showinfo("Success", f"{data['message']}\nPay: ${data.get('pay', '0.00')}")
+            else:
+                messagebox.showerror("Error", data.get("error", "Invalid Passcode"))
+        except Exception as e:
+            messagebox.showerror("System Error", "Could not connect to backend")
+        
+        self.display.delete(0, tk.END)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = KeypadApp(root)
+    root.mainloop()
