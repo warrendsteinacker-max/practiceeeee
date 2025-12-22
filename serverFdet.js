@@ -390,6 +390,86 @@ app.listen(3000, () => console.log('Server running on port 3000'));
 /////think I might make the code to were users can input there pass in machine one time for one time when they got to work and another time
 /////for when they ended all this useing data function and then calulation for pay and a file creation for that days pay on the computer that day is calulated with documentation on the machine/ computer no GUI in browser required
 
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+require('dotenv').config();
 
+const { JSONFileSyncPreset } = require('lowdb/node');
+const defaultData = { users: [] }; 
+const db = JSONFileSyncPreset('db.json', defaultData);
+
+const app = express();
+app.use(express.json());
+
+// --- Core Logic: Documentation and Calculation ---
+const processTimeLog = (user) => {
+    const safeUserId = String(user.id).replace(/[^a-z0-9]/gi, '_');
+    const userDir = path.join(__dirname, 'storage', 'users', safeUserId);
+    if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
+
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const logFile = path.join(userDir, `${dateStr}.json`);
+
+    let dayData = { start: null, end: null, totalHours: 0, dayPay: 0, rateUsed: user.rate };
+    if (fs.existsSync(logFile)) {
+        dayData = JSON.parse(fs.readFileSync(logFile));
+    }
+
+    // Toggle: If no start, Clock In. If start exists, Clock Out.
+    if (!dayData.start) {
+        dayData.start = now.toISOString();
+        console.log(`\n\x1b[32m[CLOCK IN] Hello ${user.username}! Started at: ${now.toLocaleTimeString()}\x1b[0m`);
+    } else {
+        dayData.end = now.toISOString();
+        const startTime = new Date(dayData.start);
+        const diffHrs = (now - startTime) / (1000 * 60 * 60);
+        
+        dayData.totalHours = diffHrs.toFixed(2);
+        dayData.dayPay = (diffHrs * user.rate).toFixed(2);
+
+        console.log(`\n\x1b[36m[CLOCK OUT] Goodbye ${user.username}! Ended at: ${now.toLocaleTimeString()}\x1b[0m`);
+        console.log(`\x1b[33mToday's Earnings: $${dayData.dayPay} (${dayData.totalHours} hrs)\x1b[0m`);
+    }
+
+    fs.writeFileSync(logFile, JSON.stringify(dayData, null, 2));
+    console.log(`\x1b[90mFile documented in storage/users/${safeUserId}/\x1b[0m`);
+};
+
+// --- Machine Terminal UI ---
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+const startMachine = () => {
+    console.log("\n-------------------------------------------");
+    console.log("READY FOR INPUT - PLEASE ENTER YOUR PASSWORD");
+    console.log("-------------------------------------------");
+
+    // This makes the password input invisible in the terminal for privacy
+    rl.question("PASSCODE: ", (inputPass) => {
+        // Find user by password only
+        const user = db.data.users.find(u => u.pas === inputPass);
+
+        if (!user) {
+            console.log("\x1b[31m[ERROR] Invalid Passcode. Access Denied.\x1b[0m");
+        } else {
+            // Process the clock-in/out immediately
+            processTimeLog(user);
+        }
+
+        // Reset the machine for the next person immediately
+        setTimeout(startMachine, 2000); 
+    });
+};
+
+// Start Server & Terminal
+app.listen(3000, () => {
+    console.log('Backend documentation engine running.');
+    startMachine();
+});
 
 
