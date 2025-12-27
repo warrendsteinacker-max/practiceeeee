@@ -736,13 +736,25 @@ if __name__ == "__main__":
 
 
     const threef = () => {
-        console.log("threef done")
-        return "all done"
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                let b = true
+                if(b){
+                    resolve("threef done")}
+                }
+            })
+    })
     }
-
 
     onef()
     .then((res) => {
         console.log(res)})
     .catch((error) => {
         console.error("Error:", error.message)})
+
+
+    Promise.all([onef(), twof()]).then((res) => {
+        console.log("all done", res)
+    }).catch((error) => {
+        console.error("Error in Promise.all:", error.message)
+    })
