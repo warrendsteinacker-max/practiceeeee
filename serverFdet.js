@@ -806,6 +806,17 @@ const threeff = (c) => {
 }
 
 
+const afunc = (x) => {
+    try{
+
+    }
+    catch(error){
+        console.error(error.message)
+    }
+}
+
+oneff.then((res)=> {console.log(res); return twoff()}).then((res) => {console.log(res); return threeff()}).then((res) => console.log(res)).catch((error) => console.error("Error in chain:", error.message))
+
     Promise.allSettled([onef(), twof(), threef()]).then((res) => console.log(res)).catch((error) => console.error("Error in Promise.allSettled:", error.message))
 
 
