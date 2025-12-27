@@ -604,7 +604,7 @@ if __name__ == "__main__":
 
 
 
-    const name = {
+    const person = {
 
         name: "war",
         age: 30,
@@ -617,5 +617,9 @@ if __name__ == "__main__":
 
     }
 
-    console.log(name.getage())
-    console.log(name.getname())
+    const person2 {
+        name: "stein",
+        age: 25
+    }
+    
+    console.log(person1.getname.call(person2))
