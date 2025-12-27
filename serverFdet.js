@@ -805,6 +805,7 @@ const threeff = (c) => {
 
 }
 
+oneff(x).then((res)=> {return twoff(res)}).then((res)=> {return threeff(res)}).catch((error) => console.error("Error in chain:", error.message))
 
 const afunc = async (x) => {
     try{
