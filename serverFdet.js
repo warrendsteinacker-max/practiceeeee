@@ -829,3 +829,18 @@ oneff.then((res)=> {console.log(res); return twoff()}).then((res) => {console.lo
     }).catch((error) => {
         console.error("Error in Promise.all:", error.message)
     })
+
+
+
+    const myd = (fn, d) => {
+        let timer;
+
+
+        return function(...args){
+            clearTimeout(timer);
+
+            timer = setTimeout(()=>{
+                fn.apply(this, args)
+            }, d)
+        }
+    }
