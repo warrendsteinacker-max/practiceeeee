@@ -747,17 +747,17 @@ if __name__ == "__main__":
                 }
             }, 2000)})}
 
-    const forf = () => {
+    const forf = () => {setTimeout(()=>{
         console.log("forf done")
-        return "async funcs all done"
+        return "async funcs all done"}, 2000)
     }
 
-    const fivef = () => {
-        return "fivef done"
+    const fivef = () => {setTimeout(() => {
+        return "fivef done"}, 2000)
     }
 
-    const sixf = () => {
-        return "sixf done"
+    const sixf = () => {setTimeout(() => {
+        return "sixf done"}, 2000)
     }
 
     const lastf = () => {
