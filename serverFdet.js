@@ -740,10 +740,16 @@ if __name__ == "__main__":
             setTimeout(() => {
                 let b = true
                 if(b){
-                    resolve("threef done")}
+                console.log("threef done")
+                    resolve(forf())}
+                else{
+                    reject(new Error("error"))
                 }
-            })
-    })
+            }, 2000)})}
+
+    const forf = () => {
+        console.log("forf done")
+        return "all done"
     }
 
     onef()
@@ -751,6 +757,9 @@ if __name__ == "__main__":
         console.log(res)})
     .catch((error) => {
         console.error("Error:", error.message)})
+
+
+    Promise.all([onef(), twof(), threef()]).then((res) => console.log(res)).catch((error) => console.error("Error in Promise.allSettled:", error.message))
 
 
     Promise.all([onef(), twof()]).then((res) => {
