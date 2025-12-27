@@ -671,3 +671,19 @@ if __name__ == "__main__":
         }
 
     }
+
+    const de = (fn, d) => {
+        let timer;
+
+        return function(...args){
+            clearTimeout(timer);
+
+            timer = setTimeout(() => { fn.apply(this, args) }, d);
+        }
+    }
+
+    const mythrottleFunction = (fn, d) => {
+        let th = false;
+
+        return function(...args){}
+    }
