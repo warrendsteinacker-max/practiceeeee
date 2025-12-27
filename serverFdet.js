@@ -806,9 +806,12 @@ const threeff = (c) => {
 }
 
 
-const afunc = (x) => {
+const afunc = async (x) => {
     try{
-
+        const res = await oneff(x)
+        const res2 = await twoff(res)
+        const res3 = await threeff(res2)
+        return res3
     }
     catch(error){
         console.error(error.message)
