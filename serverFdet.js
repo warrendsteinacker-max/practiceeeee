@@ -624,8 +624,13 @@ if __name__ == "__main__":
     
     console.log(person1.getname.call(person2))
 
-    const controledpost = _.debounce(async () => {
-        await axios.post('/api/data', {npost: {data: "test data"}})
-        const newP = posts.
-
-    }, 2000)
+    const controledpost = useCallback(_.debounce(async (epost) => {
+        try{
+        const {id} = epost
+        await axios.put('/api/data', epost)
+        const newPs = posts.map((p) => {if (p.id !== id) {return p} else {return epost}})
+        setPosts(newPs)}
+        catch(error){
+            console.error(error.message)
+        }
+    }, 2000), [])
