@@ -604,14 +604,14 @@ if __name__ == "__main__":
 
 
 
-    const person = {
+    const person1 = {
 
         name: "war",
         age: 30,
         getage: function(){
             return this.age
         }
-        getname: () => {
+        getname: function(){
             return this.name
         }
 
