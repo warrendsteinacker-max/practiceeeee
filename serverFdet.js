@@ -611,7 +611,11 @@ if __name__ == "__main__":
         getage: function(){
             return this.age
         }
+        getname: () => {
+            return this.name
+        }
 
     }
 
     console.log(name.getage())
+    console.log(name.getname())
