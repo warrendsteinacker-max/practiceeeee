@@ -694,7 +694,13 @@ if __name__ == "__main__":
     }
 
     const flaten = (arr, deapth = 1) => {
+        const result = [];
         arr.forEach(element => {
-            
+            if(Array.isArray(element) && deapth > 0){
+                result.push(...flaten(element, deapth -1))
+            } else {
+                result.push(element)
+            }
         });
+        return result;
     }
