@@ -718,7 +718,7 @@ if __name__ == "__main__":
                 console.log("onef done")
                 resolve(twof())}
                 else{
-                    reject(new Error(error.message))
+                    reject(new Error("error"))
                 }
             }, 2000)})}
 
@@ -730,13 +730,14 @@ if __name__ == "__main__":
                     console.log("twof done")
                     resolve(threef())}
                     else{
-                        reject(new Error(error.message))
+                        reject(new Error("error"))
                     }
                 }, 2000)})}
 
 
     const threef = () => {
-        return console.log("threef done")
+        console.log("threef done")
+        return "all done"
     }
 
 
