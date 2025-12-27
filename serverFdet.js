@@ -634,3 +634,5 @@ if __name__ == "__main__":
             console.error(error.message)
         }
     }, 2000), [])
+
+    const mydebouncedFunction = (fn, d) => { setTimeout(() => {{ fn(...args) }}, d)}
