@@ -656,3 +656,18 @@ if __name__ == "__main__":
             timer = setTimeout(() => {fn.apply(this, args)}, d)
         }
     }
+
+
+    const throtlef = (fn, d) => {
+
+        let v = false;
+
+        return function(...args){
+            if(v) return;
+
+            v = true;
+
+            setTimeout(() => { fn.apply(this, args); v = false }, d)
+        }
+
+    }
