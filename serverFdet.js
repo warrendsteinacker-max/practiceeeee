@@ -623,3 +623,9 @@ if __name__ == "__main__":
     }
     
     console.log(person1.getname.call(person2))
+
+    const controledpost = _.debounce(async () => {
+        await axios.post('/api/data', {npost: {data: "test data"}})
+        const newP = posts.
+
+    }, 2000)
