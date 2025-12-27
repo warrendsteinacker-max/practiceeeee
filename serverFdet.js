@@ -704,3 +704,15 @@ if __name__ == "__main__":
         });
         return result;
     }
+
+
+
+
+
+
+    const onef = () => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve("start")
+            }, 2000)
+    }}
