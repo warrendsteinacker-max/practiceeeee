@@ -765,11 +765,45 @@ if __name__ == "__main__":
 
     onef()
     .then((res) => {
-        console.log(res); return fivef()}).then((res) => {console.log(res); return sixf()}).then((res) => {
-            console.log(res); return lastf()}).then((res) => {
-                console.log(res)})
+        console.log(res)})
     .catch((error) => {
         console.error("Error:", error.message)})
+
+
+
+
+const oneff = (a) => {
+
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log("oneff done")
+            resolve(somef(a))
+        }, 2000)
+    })
+
+}
+
+const twoff = (b) => {
+
+        return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log("oneff done")
+            resolve(someff(b))
+        }, 2000)
+    })
+
+}
+
+const threeff = (c) => {
+
+        return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log("oneff done")
+            resolve(somefff(c))
+        }, 2000)
+    })
+
+}
 
 
     Promise.allSettled([onef(), twof(), threef()]).then((res) => console.log(res)).catch((error) => console.error("Error in Promise.allSettled:", error.message))
