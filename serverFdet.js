@@ -610,16 +610,16 @@ if __name__ == "__main__":
         age: 30,
         getage: function(){
             return this.age
-        }
+        },
         getname: function(){
             return this.name
         }
 
     }
 
-    const person2 {
+    const person2 = {
         name: "stein",
-        age: 25
+        age: 25,
     }
     
     console.log(person1.getname.call(person2))
