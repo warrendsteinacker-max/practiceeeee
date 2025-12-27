@@ -635,4 +635,24 @@ if __name__ == "__main__":
         }
     }, 2000), [])
 
-    const mydebouncedFunction = (fn, d) => { setTimeout(() => {{ fn(...args) }}, d)}
+    const mydebouncedFunction = (fn, d) => { 
+        let timer;
+
+        return function(...args){
+
+            clearTimeout(timer);
+            
+           timer = setTimeout(() => { fn.apply(this, args) }, d);
+        }
+    }
+
+
+    const mydfunc = (fn, d) => {
+        let timer;
+
+        return function(...args){
+
+            clearTimeout(timer);
+            timer = setTimeout(() => {fn.apply(this, args)}, d)
+        }
+    }
