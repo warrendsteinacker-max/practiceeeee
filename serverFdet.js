@@ -685,5 +685,16 @@ if __name__ == "__main__":
     const mythrottleFunction = (fn, d) => {
         let th = false;
 
-        return function(...args){}
+        return function(...args){
+            th = true;
+            if(th)return
+            setTimeout(()=> {fn.apply(this, args); th = false}, d)
+
+        }
+    }
+
+    const flaten = (arr, deapth = 1) => {
+        arr.forEach(element => {
+            
+        });
     }
