@@ -747,18 +747,17 @@ if __name__ == "__main__":
                 }
             }, 2000)})}
 
-    const forf = () => {setTimeout(()=>{
+    const forf = () => {return new Promise((resolve) => {setTimeout(()=>{
         console.log("forf done")
-        return "async funcs all done"}, 2000)
-    }
+        resolve(fivef())}, 2000)})}
 
-    const fivef = () => {setTimeout(() => {
-        return "fivef done"}, 2000)
-    }
+    const fivef = () => {return new Promise((resolve)=> {setTimeout(() => {
+        console.log("fivef done")
+        resolve(sixf())}, 2000)})}
 
-    const sixf = () => {setTimeout(() => {
-        return "sixf done"}, 2000)
-    }
+    const sixf = () => {return new Promise((resolve) => {setTimeout(() => {
+        console.log("sixf done")
+        resolve(lastf())}, 2000)})}
 
     const lastf = () => {
         return "all funcs now done"
