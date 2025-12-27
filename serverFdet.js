@@ -749,17 +749,31 @@ if __name__ == "__main__":
 
     const forf = () => {
         console.log("forf done")
-        return "all done"
+        return "async funcs all done"
+    }
+
+    const fivef = () => {
+        return "fivef done"
+    }
+
+    const sixf = () => {
+        return "sixf done"
+    }
+
+    const lastf = () => {
+        return "all funcs now done"
     }
 
     onef()
     .then((res) => {
-        console.log(res)})
+        console.log(res); return fivef()}).then((res) => {console.log(res); return sixf()}).then((res) => {
+            console.log(res); return lastf()}).then((res) => {
+                console.log(res)})
     .catch((error) => {
         console.error("Error:", error.message)})
 
 
-    Promise.all([onef(), twof(), threef()]).then((res) => console.log(res)).catch((error) => console.error("Error in Promise.allSettled:", error.message))
+    Promise.allSettled([onef(), twof(), threef()]).then((res) => console.log(res)).catch((error) => console.error("Error in Promise.allSettled:", error.message))
 
 
     Promise.all([onef(), twof()]).then((res) => {
