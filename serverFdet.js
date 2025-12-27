@@ -713,6 +713,35 @@ if __name__ == "__main__":
     const onef = () => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                resolve("start")
-            }, 2000)
-    }}
+                let r = true
+                if(r) {
+                console.log("onef done")
+                resolve(twof())}
+                else{
+                    reject(new Error(error.message))
+                }
+            }, 2000)})}
+
+    const twof = () => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    let e = true
+                    if(e) {
+                    console.log("twof done")
+                    resolve(threef())}
+                    else{
+                        reject(new Error(error.message))
+                    }
+                }, 2000)})}
+
+
+    const threef = () => {
+        return console.log("threef done")
+    }
+
+
+    onef()
+    .then((res) => {
+        console.log(res)})
+    .catch((error) => {
+        console.error("Error:", error.message)})
