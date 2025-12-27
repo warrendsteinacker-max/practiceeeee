@@ -599,3 +599,19 @@ if __name__ == "__main__":
 
 
     /////dont forget to install pm2 globalley in actual project 
+
+
+
+
+
+    const name = {
+
+        name: "war",
+        age: 30,
+        getage: function(){
+            return this.age
+        }
+
+    }
+
+    console.log(name.getage())
